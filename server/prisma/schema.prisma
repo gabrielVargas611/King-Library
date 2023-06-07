@@ -9,3 +9,124 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+model Usuario {
+  id             Int           @id @default(autoincrement())
+  nombreCompleto String
+  email          String        @unique
+  password       String
+  habilitado     Boolean       @default(true)
+  rolId          Int
+  rol            Roles         @relation(fields: [rolId], references: [id])
+  direciones     Direcciones[]
+  compras        Compra[]
+  evaluaciones   Evaluacion[]
+  metodosPago    MetodosPago[]
+  createdAt      DateTime      @default(now())
+  updateAt       DateTime      @default(now()) @updatedAt
+}
+
+model Roles {
+  id        Int       @id @default(autoincrement())
+  tipo      String
+  usuarios  Usuario[]
+  createdAt DateTime  @default(now())
+  updateAt  DateTime  @default(now()) @updatedAt
+}
+
+model MetodosPago {
+  id              Int      @id @default(autoincrement())
+  tipo            String
+  entidad         String
+  cuenta          String
+  fechaExpiracion DateTime
+  numeroTarjeta   String
+  codigoTarjeta   String
+  usuarioId       Int
+  usuario         Usuario  @relation(fields: [usuarioId], references: [id])
+  compras         Compra[]
+  createdAt       DateTime @default(now())
+  updateAt        DateTime @default(now()) @updatedAt
+}
+
+model Direcciones {
+  id              Int      @id @default(autoincrement())
+  provincia       String
+  canton          String
+  distrito        String
+  direccionExacta String
+  codigoPostal    String
+  telefono        String
+  usuarioId       Int
+  usuario         Usuario  @relation(fields: [usuarioId], references: [id])
+  createdAt       DateTime @default(now())
+  updateAt        DateTime @default(now()) @updatedAt
+}
+
+model Productos {
+  id                 Int          @id @default(autoincrement())
+  nombre             String
+  descripcion        String
+  precio             Decimal
+  cantidadDisponible Int
+  foto               String // TODO Es solo un place holder, luego de investigar mas se cambia este valor por el correcto
+  estadoId           Int
+  estado             Estado       @relation(fields: [estadoId], references: [id])
+  preguntas          Preguntas[]
+  evaluaciones       Evaluacion[]
+  evaluacionFinal    Float
+  createdAt          DateTime     @default(now())
+  updateAt           DateTime     @default(now()) @updatedAt
+}
+
+model Categoria {
+  id              Int      @id @default(autoincrement())
+  nombreCategoria String
+  createdAt       DateTime @default(now())
+  updateAt        DateTime @default(now()) @updatedAt
+}
+
+model Estado {
+  id        Int         @id @default(autoincrement())
+  estado    String
+  productos Productos[]
+  compras   Compra[]
+  createdAt DateTime    @default(now())
+  updateAt  DateTime    @default(now()) @updatedAt
+}
+
+model Preguntas {
+  id          Int       @id @default(autoincrement())
+  pregunta    String
+  respuesta   String
+  productosId Int
+  producto    Productos @relation(fields: [productosId], references: [id])
+  createdAt   DateTime  @default(now())
+  updateAt    DateTime  @default(now()) @updatedAt
+}
+
+model Compra {
+  id           Int         @id @default(autoincrement())
+  cantidad     Int
+  usuarioId    Int
+  usuario      Usuario     @relation(fields: [usuarioId], references: [id])
+  total        Decimal
+  metodoPagoId Int
+  metodoPago   MetodosPago @relation(fields: [metodoPagoId], references: [id])
+  estadoId     Int
+  estado       Estado      @relation(fields: [estadoId], references: [id])
+  createdAt    DateTime    @default(now())
+  updateAt     DateTime    @default(now()) @updatedAt
+}
+
+model Evaluacion {
+  id         Int       @id @default(autoincrement())
+  evaluacion Int
+  comentario String
+  usuarioId  Int
+  usuario    Usuario   @relation(fields: [usuarioId], references: [id])
+  productoId Int
+  producto   Productos @relation(fields: [productoId], references: [id])
+  createdAt  DateTime  @default(now())
+  updateAt   DateTime  @default(now()) @updatedAt
+}
